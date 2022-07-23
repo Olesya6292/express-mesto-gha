@@ -1,11 +1,14 @@
-const Card = require("../models/card");
+const Card = require('../models/card');
+const statusCodes = require('../utils/constants');
 
 module.exports.getCards = async (req, res) => {
   try {
-    const cards = await Card.find({}).populate(["owner", "likes"]);
+    const cards = await Card.find({}).populate(['owner', 'likes']);
     return res.send(cards);
   } catch (err) {
-    return res.status(500).send({ message: err.message });
+    return res
+      .status(statusCodes.DEFAULT)
+      .send({ message: 'На сервере произошла ошибка' });
   }
 };
 
@@ -15,12 +18,14 @@ module.exports.createCard = async (req, res) => {
     const card = await Card.create({ name, link, owner: req.user._id });
     return res.send(card);
   } catch (err) {
-    if (err.name === "ValidationError") {
-      return res.status(400).send({
-        message: "Переданы некорректные данные при создании карточки",
+    if (err.name === 'ValidationError') {
+      return res.status(statusCodes.BAD_REQUEST).send({
+        message: 'Переданы некорректные данные при создании карточки',
       });
     }
-    return res.status(500).send({ message: err.message });
+    return res
+      .status(statusCodes.DEFAULT)
+      .send({ message: 'На сервере произошла ошибка' });
   }
 };
 
@@ -28,16 +33,20 @@ module.exports.deleteCard = async (req, res) => {
   try {
     const card = await Card.findByIdAndRemove(req.params.cardId);
     if (!card) {
-      return res.status(404).send({ message: "Карточка не найдена" });
+      return res
+        .status(statusCodes.NOT_FOUND)
+        .send({ message: 'Карточка не найдена' });
     }
     return res.send(card);
   } catch (err) {
-    if (err.name === "CastError") {
-      return res.status(400).send({
-        message: "Некорректный id карточки",
+    if (err.name === 'CastError') {
+      return res.status(statusCodes.BAD_REQUEST).send({
+        message: 'Некорректный id карточки',
       });
     }
-    return res.status(500).send({ message: err.message });
+    return res
+      .status(statusCodes.DEFAULT)
+      .send({ message: 'На сервере произошла ошибка' });
   }
 };
 module.exports.putLikeCard = async (req, res) => {
@@ -46,18 +55,22 @@ module.exports.putLikeCard = async (req, res) => {
       req.params.cardId,
       { $addToSet: { likes: req.user._id } },
       { new: true },
-    ).populate(["owner", "likes"]);
+    ).populate(['owner', 'likes']);
     if (!card) {
-      return res.status(404).send({ message: "Карточка не найдена" });
+      return res
+        .status(statusCodes.NOT_FOUND)
+        .send({ message: 'Карточка не найдена' });
     }
     return res.send(card);
   } catch (err) {
-    if (err.name === "CastError") {
-      return res.status(400).send({
-        message: "Переданы некорректные данные для постановки лайка",
+    if (err.name === 'CastError') {
+      return res.status(statusCodes.BAD_REQUEST).send({
+        message: 'Переданы некорректные данные для постановки лайка',
       });
     }
-    return res.status(500).send({ message: err.message });
+    return res
+      .status(statusCodes.DEFAULT)
+      .send({ message: 'На сервере произошла ошибка' });
   }
 };
 
@@ -67,17 +80,21 @@ module.exports.deleteLikeCard = async (req, res) => {
       req.params.cardId,
       { $pull: { likes: req.user._id } },
       { new: true },
-    ).populate(["owner", "likes"]);
+    ).populate(['owner', 'likes']);
     if (!card) {
-      return res.status(404).send({ message: "Карточка не найдена" });
+      return res
+        .status(statusCodes.NOT_FOUND)
+        .send({ message: 'Карточка не найдена' });
     }
     return res.send(card);
   } catch (err) {
-    if (err.name === "CastError") {
-      return res.status(400).send({
-        message: " Переданы некорректные данные для снятии лайка",
+    if (err.name === 'CastError') {
+      return res.status(statusCodes.BAD_REQUEST).send({
+        message: ' Переданы некорректные данные для снятии лайка',
       });
     }
-    return res.status(500).send({ message: err.message });
+    return res
+      .status(statusCodes.DEFAULT)
+      .send({ message: 'На сервере произошла ошибка' });
   }
 };
