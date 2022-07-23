@@ -40,8 +40,8 @@ module.exports.createUser = async (req, res) => {
 };
 
 module.exports.updateUser = async (req, res) => {
-  const { name, about } = req.body;
   try {
+    const { name, about } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { name, about },
@@ -62,8 +62,8 @@ module.exports.updateUser = async (req, res) => {
 };
 
 module.exports.updateUserAvatar = async (req, res) => {
-  const { avatar } = req.body;
   try {
+    const { avatar } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { avatar },

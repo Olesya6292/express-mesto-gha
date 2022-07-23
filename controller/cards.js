@@ -10,8 +10,8 @@ module.exports.getCards = async (req, res) => {
 };
 
 module.exports.createCard = async (req, res) => {
-  const { name, link } = req.body;
   try {
+    const { name, link } = req.body;
     const card = await Card.create({ name, link, owner: req.user._id });
     return res.send(card);
   } catch (err) {
