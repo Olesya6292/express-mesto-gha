@@ -27,7 +27,9 @@ module.exports.getUserById = async (req, res) => {
         .status(statusCodes.BAD_REQUEST)
         .send({ message: 'Некорректный id пользователя' });
     }
-    return res.status(statusCodes.DEFAULT).send({ message: err.message });
+    return res
+      .status(statusCodes.DEFAULT)
+      .send({ message: 'На сервере произошла ошибка' });
   }
 };
 
