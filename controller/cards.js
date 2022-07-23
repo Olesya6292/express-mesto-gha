@@ -32,6 +32,11 @@ module.exports.deleteCard = async (req, res) => {
     }
     return res.send(card);
   } catch (err) {
+    if (err.name === "CastError") {
+      return res.status(400).send({
+        message: "Некорректный id карточки",
+      });
+    }
     return res.status(500).send({ message: err.message });
   }
 };
@@ -47,9 +52,9 @@ module.exports.putLikeCard = async (req, res) => {
     }
     return res.send(card);
   } catch (err) {
-    if (err.name === "ValidationError") {
+    if (err.name === "CastError") {
       return res.status(400).send({
-        message: " Переданы некорректные данные для постановки лайка",
+        message: "Переданы некорректные данные для постановки лайка",
       });
     }
     return res.status(500).send({ message: err.message });
@@ -68,7 +73,7 @@ module.exports.deleteLikeCard = async (req, res) => {
     }
     return res.send(card);
   } catch (err) {
-    if (err.name === "ValidationError") {
+    if (err.name === "CastError") {
       return res.status(400).send({
         message: " Переданы некорректные данные для снятии лайка",
       });
