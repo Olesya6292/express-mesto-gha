@@ -1,29 +1,32 @@
-const express = require('express');
-const mongoose = require('mongoose');
+const express = require("express");
+const mongoose = require("mongoose");
 
 const { PORT = 3000 } = process.env;
 
 const app = express();
 
-app.use(express.json());
-
-app.get('/', (req, res) => {
-  res.send('Hello World');
-});
-
-app.post('/', (req, res) => {
-  res.send(req.body);
-});
-
-async function main() {
-  await mongoose.connect('mongodb://localhost:27017/mestodb', {
+mongoose
+  .connect("mongodb://localhost:27017/mestodb", {
     useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
+  })
+  .then(() => {
+    console.log("Connected to db");
+  })
+  .catch(() => {
+    console.log("Error to db connection");
   });
-  console.log('Connected to db');
-  await app.listen(PORT);
-  console.log(`Server listen on port ${PORT}`);
-}
 
-main();
+app.use((req, res, next) => {
+  req.user = {
+    _id: "62dbd8e8cc533fbed8448363",
+  };
+
+  next();
+});
+
+app.use("/users", require("./routes/users"));
+app.use("/cards", require("./routes/cards"));
+
+app.listen(PORT, () => {
+  console.log(`Server listen on ${PORT}`);
+});
