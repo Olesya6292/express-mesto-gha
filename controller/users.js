@@ -25,8 +25,8 @@ module.exports.getUserById = async (req, res) => {
 };
 
 module.exports.createUser = async (req, res) => {
-  const { name, about, avatar } = req.body;
   try {
+    const { name, about, avatar } = req.body;
     const user = await User.create({ name, about, avatar });
     return res.send(user);
   } catch (err) {
