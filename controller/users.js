@@ -1,5 +1,20 @@
-const User = require('../models/user');
-const statusCodes = require('../utils/constants');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const User = require("../models/user");
+const statusCodes = require("../utils/constants");
+
+module.exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findUserByCredentials(email, password);
+    const token = await jwt.sign({ _id: user._id }, "some-secret-key", {
+      expiresIn: "7d",
+    });
+    return res.send({ token });
+  } catch (err) {
+    res.status(401).send({ message: err.message });
+  }
+};
 
 module.exports.getUsers = async (req, res) => {
   try {
@@ -8,7 +23,7 @@ module.exports.getUsers = async (req, res) => {
   } catch (err) {
     res
       .status(statusCodes.DEFAULT)
-      .send({ message: 'На сервере произошла ошибка' });
+      .send({ message: "На сервере произошла ошибка" });
   }
 };
 
@@ -18,35 +33,42 @@ module.exports.getUserById = async (req, res) => {
     if (!user) {
       return res
         .status(statusCodes.NOT_FOUND)
-        .send({ message: 'Пользователь не найден' });
+        .send({ message: "Пользователь не найден" });
     }
     return res.send(user);
   } catch (err) {
-    if (err.name === 'CastError') {
+    if (err.name === "CastError") {
       return res
         .status(statusCodes.BAD_REQUEST)
-        .send({ message: 'Некорректный id пользователя' });
+        .send({ message: "Некорректный id пользователя" });
     }
     return res
       .status(statusCodes.DEFAULT)
-      .send({ message: 'На сервере произошла ошибка' });
+      .send({ message: "На сервере произошла ошибка" });
   }
 };
 
 module.exports.createUser = async (req, res) => {
   try {
-    const { name, about, avatar } = req.body;
-    const user = await User.create({ name, about, avatar });
+    const { name, about, avatar, email, password } = req.body;
+    const hash = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    });
     return res.send(user);
   } catch (err) {
-    if (err.name === 'ValidationError') {
+    if (err.name === "ValidationError") {
       return res.status(statusCodes.BAD_REQUEST).send({
-        message: 'Переданы некорректные имя, описание или аватар',
+        message: "Переданы некорректные имя, описание или аватар",
       });
     }
     return res
       .status(statusCodes.DEFAULT)
-      .send({ message: 'На сервере произошла ошибка' });
+      .send({ message: "На сервере произошла ошибка" });
   }
 };
 
@@ -56,23 +78,23 @@ module.exports.updateUser = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { name, about },
-      { new: true, runValidators: true },
+      { new: true, runValidators: true }
     );
     if (!user) {
       return res
         .status(statusCodes.NOT_FOUND)
-        .send({ message: 'Пользователь не найден' });
+        .send({ message: "Пользователь не найден" });
     }
     return res.send(user);
   } catch (err) {
-    if (err.name === 'ValidationError') {
+    if (err.name === "ValidationError") {
       return res.status(statusCodes.BAD_REQUEST).send({
-        message: 'Переданы некорректные имя или описание',
+        message: "Переданы некорректные имя или описание",
       });
     }
     return res
       .status(statusCodes.DEFAULT)
-      .send({ message: 'На сервере произошла ошибка' });
+      .send({ message: "На сервере произошла ошибка" });
   }
 };
 
@@ -82,22 +104,22 @@ module.exports.updateUserAvatar = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { avatar },
-      { new: true, runValidators: true },
+      { new: true, runValidators: true }
     );
     if (!user) {
       return res
         .status(statusCodes.NOT_FOUND)
-        .send({ message: 'Пользователь не найден' });
+        .send({ message: "Пользователь не найден" });
     }
     return res.send(user);
   } catch (err) {
-    if (err.name === 'ValidationError') {
+    if (err.name === "ValidationError") {
       return res.status(statusCodes.BAD_REQUEST).send({
-        message: 'Переданы некорректные данные при обновлении аватара',
+        message: "Переданы некорректные данные при обновлении аватара",
       });
     }
     return res
       .status(statusCodes.DEFAULT)
-      .send({ message: 'На сервере произошла ошибка' });
+      .send({ message: "На сервере произошла ошибка" });
   }
 };
