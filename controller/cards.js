@@ -1,55 +1,45 @@
+/* eslint-disable consistent-return */
 const Card = require('../models/card');
-const statusCodes = require('../utils/constants');
+const { CREATED } = require('../utils/constants');
+const { NotFoundError, BadRequestError } = require('../errors/errors');
 
-module.exports.getCards = async (req, res) => {
+module.exports.getCards = async (req, res, next) => {
   try {
     const cards = await Card.find({}).populate(['owner', 'likes']);
     return res.send(cards);
   } catch (err) {
-    return res
-      .status(statusCodes.DEFAULT)
-      .send({ message: 'На сервере произошла ошибка' });
+    next(err);
   }
 };
 
-module.exports.createCard = async (req, res) => {
+module.exports.createCard = async (req, res, next) => {
   try {
     const { name, link } = req.body;
     const card = await Card.create({ name, link, owner: req.user._id });
-    return res.send(card);
+    return res.status(CREATED).send(card);
   } catch (err) {
     if (err.name === 'ValidationError') {
-      return res.status(statusCodes.BAD_REQUEST).send({
-        message: 'Переданы некорректные данные при создании карточки',
-      });
+      return next(new BadRequestError('Переданы некорректные данные при создании карточки'));
     }
-    return res
-      .status(statusCodes.DEFAULT)
-      .send({ message: 'На сервере произошла ошибка' });
+    next(err);
   }
 };
 
-module.exports.deleteCard = async (req, res) => {
+module.exports.deleteCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndRemove(req.params.cardId);
     if (!card) {
-      return res
-        .status(statusCodes.NOT_FOUND)
-        .send({ message: 'Карточка не найдена' });
+      throw new NotFoundError('Карточка не найдена');
     }
     return res.send(card);
   } catch (err) {
     if (err.name === 'CastError') {
-      return res.status(statusCodes.BAD_REQUEST).send({
-        message: 'Некорректный id карточки',
-      });
+      return next(new BadRequestError('Некорректный id карточки'));
     }
-    return res
-      .status(statusCodes.DEFAULT)
-      .send({ message: 'На сервере произошла ошибка' });
+    next(err);
   }
 };
-module.exports.putLikeCard = async (req, res) => {
+module.exports.putLikeCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -57,24 +47,18 @@ module.exports.putLikeCard = async (req, res) => {
       { new: true },
     ).populate(['owner', 'likes']);
     if (!card) {
-      return res
-        .status(statusCodes.NOT_FOUND)
-        .send({ message: 'Карточка не найдена' });
+      throw new NotFoundError('Карточка не найдена');
     }
     return res.send(card);
   } catch (err) {
     if (err.name === 'CastError') {
-      return res.status(statusCodes.BAD_REQUEST).send({
-        message: 'Переданы некорректные данные для постановки лайка',
-      });
+      return next(new BadRequestError('Переданы некорректные данные для постановки лайка'));
     }
-    return res
-      .status(statusCodes.DEFAULT)
-      .send({ message: 'На сервере произошла ошибка' });
+    next(err);
   }
 };
 
-module.exports.deleteLikeCard = async (req, res) => {
+module.exports.deleteLikeCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -82,19 +66,13 @@ module.exports.deleteLikeCard = async (req, res) => {
       { new: true },
     ).populate(['owner', 'likes']);
     if (!card) {
-      return res
-        .status(statusCodes.NOT_FOUND)
-        .send({ message: 'Карточка не найдена' });
+      throw new NotFoundError('Карточка не найдена');
     }
     return res.send(card);
   } catch (err) {
     if (err.name === 'CastError') {
-      return res.status(statusCodes.BAD_REQUEST).send({
-        message: ' Переданы некорректные данные для снятии лайка',
-      });
+      return next(new BadRequestError(' Переданы некорректные данные для снятии лайка'));
     }
-    return res
-      .status(statusCodes.DEFAULT)
-      .send({ message: 'На сервере произошла ошибка' });
+    next(err);
   }
 };
