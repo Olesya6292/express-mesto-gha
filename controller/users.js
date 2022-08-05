@@ -4,9 +4,8 @@ const { NODE_ENV, JWT_SECRET } = process.env;
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { CREATED, MONGO_ERROR } = require('../utils/constants');
+const { CREATED, MONGO_ERROR, SUCCESS } = require('../utils/constants');
 const {
-  UnauthorizedError,
   NotFoundError,
   BadRequestError,
   ConflictError,
@@ -16,9 +15,9 @@ module.exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findUserByCredentials(email, password);
-    if (!user) {
-      throw new UnauthorizedError('Неправильный логин или пароль');
-    }
+    /*  if (!user) {
+ throw new UnauthorizedError('Неправильный логин или пароль');
+} */
     const token = jwt.sign(
       { _id: user._id },
       NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key',
@@ -62,7 +61,7 @@ module.exports.getCurrentUser = async (req, res, next) => {
     if (!user) {
       throw new NotFoundError('Пользователь не найден');
     }
-    res.send(user);
+    return res.status(SUCCESS).res.send(user);
   } catch (err) {
     next(err);
   }
@@ -72,14 +71,14 @@ module.exports.createUser = async (req, res, next) => {
   try {
     const { name, about, avatar, email, password } = req.body;
     const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({
+    await User.create({
       name,
       about,
       avatar,
       email,
       password: hash,
     });
-    return res.status(CREATED).send(user);
+    return res.status(CREATED).send({ name, about, avatar, email });
   } catch (err) {
     if (err.name === 'ValidationError') {
       return next(
