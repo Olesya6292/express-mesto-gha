@@ -5,7 +5,12 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { CREATED, MONGO_ERROR } = require('../utils/constants');
-const { UnauthorizedError, NotFoundError, BadRequestError, ConflictError } = require('../errors/errors');
+const {
+  UnauthorizedError,
+  NotFoundError,
+  BadRequestError,
+  ConflictError,
+} = require('../errors/errors');
 
 module.exports.login = async (req, res, next) => {
   try {
@@ -14,9 +19,13 @@ module.exports.login = async (req, res, next) => {
     if (!user) {
       throw new UnauthorizedError('Неправильный логин или пароль');
     }
-    const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key', {
-      expiresIn: '7d',
-    });
+    const token = jwt.sign(
+      { _id: user._id },
+      NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key',
+      {
+        expiresIn: '7d',
+      },
+    );
     return res.send({ token });
   } catch (err) {
     next(err);
@@ -73,10 +82,16 @@ module.exports.createUser = async (req, res, next) => {
     return res.status(CREATED).send(user);
   } catch (err) {
     if (err.name === 'ValidationError') {
-      return next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
+      return next(
+        new BadRequestError(
+          'Переданы некорректные данные при создании пользователя',
+        ),
+      );
     }
     if (err.code === MONGO_ERROR) {
-      return next(new ConflictError('Пользователь с таким email уже существует'));
+      return next(
+        new ConflictError('Пользователь с таким email уже существует'),
+      );
     }
     next(err);
   }
@@ -96,7 +111,9 @@ module.exports.updateUser = async (req, res, next) => {
     return res.send(user);
   } catch (err) {
     if (err.name === 'ValidationError') {
-      return next(new BadRequestError('Переданы некорректные имя или описание'));
+      return next(
+        new BadRequestError('Переданы некорректные имя или описание'),
+      );
     }
     next(err);
   }
@@ -116,7 +133,11 @@ module.exports.updateUserAvatar = async (req, res, next) => {
     return res.send(user);
   } catch (err) {
     if (err.name === 'ValidationError') {
-      return next(new BadRequestError('Переданы некорректные данные при обновлении аватара'));
+      return next(
+        new BadRequestError(
+          'Переданы некорректные данные при обновлении аватара',
+        ),
+      );
     }
     next(err);
   }

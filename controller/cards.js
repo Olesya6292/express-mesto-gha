@@ -1,7 +1,11 @@
 /* eslint-disable consistent-return */
 const Card = require('../models/card');
 const { CREATED } = require('../utils/constants');
-const { NotFoundError, BadRequestError } = require('../errors/errors');
+const {
+  NotFoundError,
+  BadRequestError,
+  ForbiddenError,
+} = require('../errors/errors');
 
 module.exports.getCards = async (req, res, next) => {
   try {
@@ -19,7 +23,11 @@ module.exports.createCard = async (req, res, next) => {
     return res.status(CREATED).send(card);
   } catch (err) {
     if (err.name === 'ValidationError') {
-      return next(new BadRequestError('Переданы некорректные данные при создании карточки'));
+      return next(
+        new BadRequestError(
+          'Переданы некорректные данные при создании карточки',
+        ),
+      );
     }
     next(err);
   }
@@ -27,18 +35,20 @@ module.exports.createCard = async (req, res, next) => {
 
 module.exports.deleteCard = async (req, res, next) => {
   try {
-    const card = await Card.findByIdAndRemove(req.params.cardId);
+    const card = await Card.findById(req.params.cardId);
     if (!card) {
       throw new NotFoundError('Карточка не найдена');
     }
+    if (!card.owner.equals(req.user._id)) {
+      throw new ForbiddenError('Нельзя удалить чужую карточку');
+    }
+    await Card.findByIdAndRemove(req.params.cardId);
     return res.send(card);
   } catch (err) {
-    if (err.name === 'CastError') {
-      return next(new BadRequestError('Некорректный id карточки'));
-    }
     next(err);
   }
 };
+
 module.exports.putLikeCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
@@ -52,7 +62,9 @@ module.exports.putLikeCard = async (req, res, next) => {
     return res.send(card);
   } catch (err) {
     if (err.name === 'CastError') {
-      return next(new BadRequestError('Переданы некорректные данные для постановки лайка'));
+      return next(
+        new BadRequestError('Переданы некорректные данные для постановки лайка'),
+      );
     }
     next(err);
   }
@@ -71,7 +83,9 @@ module.exports.deleteLikeCard = async (req, res, next) => {
     return res.send(card);
   } catch (err) {
     if (err.name === 'CastError') {
-      return next(new BadRequestError(' Переданы некорректные данные для снятии лайка'));
+      return next(
+        new BadRequestError(' Переданы некорректные данные для снятии лайка'),
+      );
     }
     next(err);
   }
