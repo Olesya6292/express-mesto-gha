@@ -52,7 +52,7 @@ module.exports.getUserById = async (req, res, next) => {
   }
 };
 
-module.exports.getCurrentUser = async (req, res, next) => {
+/* module.exports.getCurrentUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -62,6 +62,19 @@ module.exports.getCurrentUser = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+}; */
+
+module.exports.getCurrentUser = (req, res, next) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        return next(new NotFoundError('Данные пользователя не найдены'));
+      }
+      return res.send(user);
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
 
 module.exports.createUser = async (req, res, next) => {

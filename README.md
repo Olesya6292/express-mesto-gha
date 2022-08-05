@@ -26,3 +26,5 @@
 
 `npm run start` — запускает сервер   
 `npm run dev` — запускает сервер с hot-reload
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MmVkNDcxYjZlMzUxNDVmMzI1YjI0N2MiLCJpYXQiOjE2NTk3MjA0NDYsImV4cCI6MTY2MDMyNTI0Nn0.zw2QoQNO4dc3KTXRHgAEkW-GsMZF3_rPG7i7A8WOXZY

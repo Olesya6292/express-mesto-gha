@@ -11,6 +11,8 @@ const {
 
 router.get('/', getUsers);
 
+router.get('/me', getCurrentUser);
+
 router.get(
   '/:userId',
   celebrate({
@@ -20,8 +22,6 @@ router.get(
   }),
   getUserById,
 );
-
-router.get('/me', getCurrentUser);
 
 router.patch(
   '/me',
