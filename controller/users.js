@@ -4,7 +4,7 @@ const { NODE_ENV, JWT_SECRET } = process.env;
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { CREATED, MONGO_ERROR, SUCCESS } = require('../utils/constants');
+const { CREATED, MONGO_ERROR } = require('../utils/constants');
 const {
   NotFoundError,
   BadRequestError,
@@ -15,9 +15,6 @@ module.exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findUserByCredentials(email, password);
-    /*  if (!user) {
- throw new UnauthorizedError('Неправильный логин или пароль');
-} */
     const token = jwt.sign(
       { _id: user._id },
       NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key',
@@ -61,7 +58,7 @@ module.exports.getCurrentUser = async (req, res, next) => {
     if (!user) {
       throw new NotFoundError('Пользователь не найден');
     }
-    return res.status(SUCCESS).res.send(user);
+    return res.send(user);
   } catch (err) {
     next(err);
   }
