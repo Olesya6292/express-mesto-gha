@@ -38,7 +38,7 @@ module.exports.getUsers = async (req, res, next) => {
 module.exports.getUserById = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId)
-      .orFail(next(new NotFoundError('Пользователь не найден')));
+      .orFail(new NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (err) {
     if (err.name === 'CastError') {
@@ -51,7 +51,7 @@ module.exports.getUserById = async (req, res, next) => {
 module.exports.getCurrentUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id)
-      .orFail(next(new NotFoundError('Пользователь не найден')));
+      .orFail(new NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (err) {
     next(err);
@@ -95,7 +95,7 @@ module.exports.updateUser = async (req, res, next) => {
       { name, about },
       { new: true, runValidators: true },
     )
-      .orFail(next(new NotFoundError('Пользователь не найден')));
+      .orFail(new NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (err) {
     if (err.name === 'ValidationError') {
@@ -115,7 +115,7 @@ module.exports.updateUserAvatar = async (req, res, next) => {
       { avatar },
       { new: true, runValidators: true },
     )
-      .orFail(next(new NotFoundError('Пользователь не найден')));
+      .orFail(new NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (err) {
     if (err.name === 'ValidationError') {
