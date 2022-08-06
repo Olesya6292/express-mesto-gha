@@ -35,10 +35,8 @@ module.exports.createCard = async (req, res, next) => {
 
 module.exports.deleteCard = async (req, res, next) => {
   try {
-    const card = await Card.findById(req.params.cardId);
-    if (!card) {
-      throw new NotFoundError('Карточка не найдена');
-    }
+    const card = await Card.findById(req.params.cardId)
+      .orFail(next(new NotFoundError('Карточка не найдена')));
     if (!card.owner.equals(req.user._id)) {
       throw new ForbiddenError('Нельзя удалить чужую карточку');
     }
@@ -55,10 +53,8 @@ module.exports.putLikeCard = async (req, res, next) => {
       req.params.cardId,
       { $addToSet: { likes: req.user._id } },
       { new: true },
-    ).populate(['owner', 'likes']);
-    if (!card) {
-      throw new NotFoundError('Карточка не найдена');
-    }
+    ).populate(['owner', 'likes'])
+      .orFail(next(new NotFoundError('Карточка не найдена')));
     return res.send(card);
   } catch (err) {
     if (err.name === 'CastError') {
@@ -76,10 +72,8 @@ module.exports.deleteLikeCard = async (req, res, next) => {
       req.params.cardId,
       { $pull: { likes: req.user._id } },
       { new: true },
-    ).populate(['owner', 'likes']);
-    if (!card) {
-      throw new NotFoundError('Карточка не найдена');
-    }
+    ).populate(['owner', 'likes'])
+      .orFail(next(new NotFoundError('Карточка не найдена')));
     return res.send(card);
   } catch (err) {
     if (err.name === 'CastError') {

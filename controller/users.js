@@ -1,6 +1,6 @@
 /* eslint-disable consistent-return */
 /* eslint-disable object-curly-newline */
-const { NODE_ENV, JWT_SECRET } = process.env;
+const { JWT_SECRET = 'dev-key' } = process.env;
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -17,10 +17,8 @@ module.exports.login = async (req, res, next) => {
     const user = await User.findUserByCredentials(email, password);
     const token = jwt.sign(
       { _id: user._id },
-      NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key',
-      {
-        expiresIn: '7d',
-      },
+      JWT_SECRET,
+      { expiresIn: '7d' },
     );
     return res.send({ token });
   } catch (err) {
@@ -39,10 +37,8 @@ module.exports.getUsers = async (req, res, next) => {
 
 module.exports.getUserById = async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.userId);
-    if (!user) {
-      throw new NotFoundError('Пользователь не найден');
-    }
+    const user = await User.findById(req.params.userId)
+      .orFail(next(new NotFoundError('Пользователь не найден')));
     return res.send(user);
   } catch (err) {
     if (err.name === 'CastError') {
@@ -54,10 +50,8 @@ module.exports.getUserById = async (req, res, next) => {
 
 module.exports.getCurrentUser = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return next(new NotFoundError('Пользователь не найден'));
-    }
+    const user = await User.findById(req.user._id)
+      .orFail(next(new NotFoundError('Пользователь не найден')));
     return res.send(user);
   } catch (err) {
     next(err);
@@ -100,10 +94,8 @@ module.exports.updateUser = async (req, res, next) => {
       req.user._id,
       { name, about },
       { new: true, runValidators: true },
-    );
-    if (!user) {
-      throw new NotFoundError('Пользователь не найден');
-    }
+    )
+      .orFail(next(new NotFoundError('Пользователь не найден')));
     return res.send(user);
   } catch (err) {
     if (err.name === 'ValidationError') {
@@ -122,10 +114,8 @@ module.exports.updateUserAvatar = async (req, res, next) => {
       req.user._id,
       { avatar },
       { new: true, runValidators: true },
-    );
-    if (!user) {
-      throw new NotFoundError('Пользователь не найден');
-    }
+    )
+      .orFail(next(new NotFoundError('Пользователь не найден')));
     return res.send(user);
   } catch (err) {
     if (err.name === 'ValidationError') {
