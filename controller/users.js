@@ -1,6 +1,6 @@
 /* eslint-disable consistent-return */
 /* eslint-disable object-curly-newline */
-const { JWT_SECRET = 'dev-key' } = process.env;
+const { NODE_ENV, JWT_SECRET } = process.env;
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -17,7 +17,7 @@ module.exports.login = async (req, res, next) => {
     const user = await User.findUserByCredentials(email, password);
     const token = jwt.sign(
       { _id: user._id },
-      JWT_SECRET,
+      NODE_ENV === 'production' ? JWT_SECRET : 'dev-key',
       { expiresIn: '7d' },
     );
     return res.send({ token });
